@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+/* Custom theme */
+@theme {
+  --color-charcoal: #0d0d0d;
+  --color-signal: #22c55e;
+  --color-emerald: #22c55e;
+  --color-mute: #6b7280;
+}
