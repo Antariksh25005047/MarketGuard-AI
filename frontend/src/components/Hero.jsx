@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import Navbar from './Navbar'
 import HeroBackground from './HeroBackground'
 
@@ -71,27 +72,27 @@ export default function Hero() {
             className="animate-fade-up mt-9 flex flex-wrap items-center gap-4"
             style={{ animationDelay: '0.32s' }}
           >
-            <a
-              href="#get-started"
-              className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-signal px-7 py-3.5 font-body text-sm font-semibold text-charcoal shadow-[0_0_30px_rgba(0,255,148,0.25)] transition-transform duration-200 hover:scale-[1.03]"
-            >
-              Get Started
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 16 16"
-                fill="none"
-                className="transition-transform duration-200 group-hover:translate-x-0.5"
-              >
-                <path
-                  d="M3 8H13M13 8L9 4M13 8L9 12"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </a>
+            <Link
+  to="/login"
+  className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-signal px-7 py-3.5 font-body text-sm font-semibold text-charcoal shadow-[0_0_30px_rgba(0,255,148,0.25)] transition-transform duration-200 hover:scale-[1.03]"
+>
+  Get Started
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 16 16"
+    fill="none"
+    className="transition-transform duration-200 group-hover:translate-x-0.5"
+  >
+    <path
+      d="M3 8H13M13 8L9 4M13 8L9 12"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+</Link>
             <a
               href="#demo"
               className="font-body text-sm text-white/70 underline-offset-4 transition-colors hover:text-white hover:underline"
