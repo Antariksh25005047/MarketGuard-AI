@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import React, { useState, useEffect, useRef, useId } from "react";
 
 /**
@@ -474,33 +474,47 @@ function FieldLabel({ children }) {
   return <label className="mb-2 block text-[13.5px] font-medium text-white">{children}</label>;
 }
 
-function TextInput({ icon, placeholder, type = "text" }) {
+function TextInput({
+  icon,
+  placeholder,
+  type = "text",
+  value,
+  onChange,
+}) {
   return (
     <div className="relative">
       <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
         {icon}
       </span>
+
       <input
         type={type}
         placeholder={placeholder}
+        value={value}
+        onChange={onChange}
         className="h-[50px] w-full rounded-xl border border-white/10 bg-white/[0.03] pl-11 pr-4 text-[14px] text-white placeholder-gray-500 outline-none transition-colors focus:border-emerald-500/50 focus:bg-white/[0.05] focus:ring-2 focus:ring-emerald-500/20"
       />
     </div>
   );
 }
 
-function PasswordInput() {
+function PasswordInput({ value, onChange }) {
   const [show, setShow] = useState(false);
+
   return (
     <div className="relative">
       <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
         <LockIcon className="h-[18px] w-[18px]" />
       </span>
+
       <input
         type={show ? "text" : "password"}
         placeholder="Enter your password"
+        value={value}
+        onChange={onChange}
         className="h-[50px] w-full rounded-xl border border-white/10 bg-white/[0.03] pl-11 pr-11 text-[14px] text-white placeholder-gray-500 outline-none transition-colors focus:border-emerald-500/50 focus:bg-white/[0.05] focus:ring-2 focus:ring-emerald-500/20"
       />
+
       <button
         type="button"
         onClick={() => setShow((s) => !s)}
@@ -519,6 +533,10 @@ function PasswordInput() {
 
 export default function MarketGuardLogin() {
   const [remember, setRemember] = useState(false);
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const nvdaPoints = [
     { x: 0, y: 34 }, { x: 16, y: 30 }, { x: 32, y: 33 }, { x: 48, y: 24 },
@@ -540,6 +558,35 @@ export default function MarketGuardLogin() {
     { symbol: "BTC", change: "+5.78%", price: "$67,231.00" },
     { symbol: "AAPL", change: "+1.25%", price: "$195.42" },
   ];
+  const handleLogin = async () => {
+  try {
+    const response = await fetch("http://127.0.0.1:8000/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      localStorage.setItem("token", data.access_token);
+
+      alert("Login Successful!");
+
+      navigate("/dashboard");
+    } else {
+      alert(data.detail);
+    }
+  } catch (err) {
+    alert("Server Error");
+    console.error(err);
+  }
+};
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-black font-sans antialiased">
@@ -723,12 +770,17 @@ export default function MarketGuardLogin() {
                     icon={<MailIcon className="h-[18px] w-[18px]" />}
                     placeholder="Enter your email"
                     type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
 
                 <div className="mt-4">
                   <FieldLabel>Password</FieldLabel>
-                  <PasswordInput />
+                  <PasswordInput 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  />
                 </div>
 
                 <div className="mt-3.5 flex items-center justify-between">
@@ -758,7 +810,10 @@ export default function MarketGuardLogin() {
                 </div>
 
                 <div className="mt-5">
-                  <ShineButton variant="primary">
+                  <ShineButton 
+                  variant="primary"
+                  onClick={handleLogin}
+                  >
                     Sign In
                     <ArrowRightIcon className="h-[18px] w-[18px] transition-transform duration-300 group-hover:translate-x-1" />
                   </ShineButton>

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import React, { useState, useEffect, useRef } from "react";
 
 /**
@@ -464,10 +464,51 @@ function PasswordStrength({ password }) {
 /* ===================================================================== */
 
 export default function MarketGuardSignup() {
+  const navigate = useNavigate();
   const [agree, setAgree] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
 
   const update = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+  const handleSignup = async () => {
+  if (!form.name || !form.email || !form.password || !form.confirm) {
+    alert("Please fill all fields");
+    return;
+  }
+
+  if (form.password !== form.confirm) {
+    alert("Passwords do not match");
+    return;
+  }
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/api/auth/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      localStorage.setItem("token", data.access_token);
+
+      alert("Account Created Successfully!");
+
+      navigate("/dashboard");
+    } else {
+      alert(data.detail);
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Backend server is not running.");
+  }
+};
   const confirmMismatch = form.confirm.length > 0 && form.confirm !== form.password;
 
   return (
@@ -696,7 +737,11 @@ export default function MarketGuardSignup() {
                 </label>
 
                 <div className="mt-5">
-                  <ShineButton variant="primary" disabled={!agree}>
+                  <ShineButton 
+                      variant="primary" 
+                      disabled={!agree}
+                      onClick={handleSignup}
+                  >
                     Create Account
                     <ArrowRightIcon className="h-[18px] w-[18px] transition-transform duration-300 group-hover:translate-x-1" />
                   </ShineButton>
@@ -705,7 +750,7 @@ export default function MarketGuardSignup() {
                 <p className="mt-5 text-center text-[13.5px] text-gray-400">
                   Already have an account?{" "}
                 <Link
-                    to="/signup"
+                    to="/login"
                     className="font-semibold text-emerald-400 hover:text-emerald-300"
                 >
                     Sign in
