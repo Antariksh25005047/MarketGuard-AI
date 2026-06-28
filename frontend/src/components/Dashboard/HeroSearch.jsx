@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from "react-router-dom";
 
 const TRENDING_STOCKS = ['AAPL', 'NVDA', 'TSLA', 'MSFT', 'TCS', 'RELIANCE']
 
@@ -44,9 +45,13 @@ function SparkIcon() {
 export default function HeroSearch() {
   const [query, setQuery] = useState('')
   const [focused, setFocused] = useState(false)
+  const navigate = useNavigate();
 
   const handleAnalyze = (e) => {
     e.preventDefault()
+    if(!query.trim())
+
+      navigate(`/stock-analysis/${query.toUpperCase()}`);
     // UI only — wire up real stock analysis here.
   }
 
@@ -114,7 +119,10 @@ export default function HeroSearch() {
             <button
               key={symbol}
               type="button"
-              onClick={() => setQuery(symbol)}
+              onClick={() => {
+                setQuery(symbol)
+                navigate(`/stock-analysis/${symbol}`);
+              }}
               className="rounded-full border border-white/[0.1] bg-white/[0.03] px-4 py-2 font-body text-sm text-white/75 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald/40 hover:bg-emerald/10 hover:text-emerald hover:shadow-[0_0_18px_rgba(34,197,94,0.3)]"
             >
               {symbol}

@@ -37,7 +37,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage/>} />
         <Route path="/dashboard" element={<Dashboard/>}/>
-        <Route path="/stock-analysis" element={<StockAnalysis />} />
+        <Route path="/stock-analysis/:symbol" element={<StockAnalysis />} />
       </Routes>
     </BrowserRouter>
   );
