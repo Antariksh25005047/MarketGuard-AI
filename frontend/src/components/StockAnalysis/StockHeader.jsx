@@ -59,17 +59,32 @@ function StatCard({ label, value }) {
   );
 }
 
-export default function StockHeader({
-  companyName = "Tesla Inc.",
-  ticker = "TSLA",
-  price = 256.4,
-  changePercent = 2.4,
-  marketCap = "$820B",
-  volume = "48.2M",
-  high52w = "$299.29",
-}) {
+export default function StockHeader({ stock }) {
+  const companyName = stock?.companyName || "Unknown Company";
+  const ticker = stock?.symbol || "N/A";
+  const price = stock?.price || 0;
+
+  const previousClose = stock?.previousClose || 0;
+
+  const changePercent =
+  previousClose !== 0
+    ? ((price - previousClose) / previousClose) * 100
+    : 0;
+
+  const marketCap = stock?.marketCap?.toLocaleString() || "-";
+  const volume = stock?.volume?.toLocaleString() || "-";
+  const high52w = stock?.high52w || "-";
+  // companyName = "Tesla Inc.",
+  // ticker = "TSLA",
+  // price = 256.4,
+  // changePercent = 2.4,
+  // marketCap = "$820B",
+  // volume = "48.2M",
+  // high52w = "$299.29",
+//}) {
   const isPositive = changePercent >= 0;
   const changeColor = isPositive ? "#4ade80" : "#ef4444";
+  console.log("StockHeader received:", stock);
 
   return (
     <header

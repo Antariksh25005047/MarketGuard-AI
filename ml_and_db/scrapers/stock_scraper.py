@@ -47,6 +47,78 @@ def fetch_all_stocks()-> list:
             results.append(data)
             print(f"  {data['close']:.2f} | Vol: {data['volume']:,.0f}")
     return results
+
+def fetch_stock_details(symbol: str):
+    try:
+        ticker = yf.Ticker(symbol)
+        info = ticker.info
+
+        return {
+            "symbol": symbol,
+            "companyName": info.get("longName"),
+            "price": info.get("currentPrice"),
+            "previousClose": info.get("previousClose"),
+            "marketCap": info.get("marketCap"),
+            "volume": info.get("volume"),
+            "high52w": info.get("fiftyTwoWeekHigh"),
+            "low52w": info.get("fiftyTwoWeekLow"),
+            "peRatio": info.get("trailingPE"),
+            "eps": info.get("trailingEps"),
+            "beta": info.get("beta"),
+        }
+
+    except Exception as e:
+        print(f"Error fetching stock details: {e}")
+        return None
+    
+def fetch_stock_history(symbol: str, period="6mo"):
+    try:
+        ticker = yf.Ticker(symbol)
+
+
+        INTERVAL_MAP = {
+            "1d": "5m",
+            "5d": "30m",
+            "1mo": "1d",
+            "6mo": "1d",
+            "1y": "1d",
+            "5y": "1wk",
+        }
+
+        interval = INTERVAL_MAP.get(period, "1d")
+
+        hist = ticker.history(
+            period=period,
+            interval=interval
+        )
+
+        if hist.empty:
+            return None
+        
+        hist = hist.dropna()
+
+        history = []
+
+        for date, row in hist.iterrows():
+
+            if pd.isna(row["Open"]) or pd.isna(row["Close"]):
+               continue
+
+            history.append({
+                "date": date.strftime("%Y-%m-%d"),
+                "open": float(row["Open"]),
+                "high": float(row["High"]),
+                "low": float(row["Low"]),
+                "close": float(row["Close"]),
+                "volume": int(row["Volume"]),
+            })
+
+        return history
+
+    except Exception as e:
+        print(f"Error fetching stock history: {e}")
+        return None
+
 if __name__ == "__main__":
     print(" Fetching stock prices...\n")
     results=fetch_all_stocks()

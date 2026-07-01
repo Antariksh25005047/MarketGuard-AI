@@ -28,6 +28,8 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import Dashboard from "./pages/Dashboard";
 import StockAnalysis from "./pages/StockAnalysis";
+import ProfilePage from "./pages/Profilepage";
+// import Watchlist from "./pages/WatchList";
 
 function App() {
   return (
@@ -38,6 +40,8 @@ function App() {
         <Route path="/signup" element={<SignupPage/>} />
         <Route path="/dashboard" element={<Dashboard/>}/>
         <Route path="/stock-analysis/:symbol" element={<StockAnalysis />} />
+        <Route path="/profile" element={<ProfilePage/>} />
+        {/* <Route path="/watchlist" element={<Watchlist />} /> */}
       </Routes>
     </BrowserRouter>
   );

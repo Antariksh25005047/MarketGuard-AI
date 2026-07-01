@@ -1,4 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+// const [chartData, setChartData] = useState([]);
+// const [loading, setLoading] = useState(true);
+import { useState, useEffect, useRef } from "react";
 import {
   AreaChart,
   Area,
@@ -126,28 +128,92 @@ const CustomActiveDot = ({ cx, cy }) => (
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function StockChart({ symbol = "TSLA", basePrice = 256.4 }) {
-  const [activeTimeframe, setActiveTimeframe] = useState("1D");
-  const [chartData, setChartData] = useState([]);
-  const [animationKey, setAnimationKey] = useState(0);
-  const [priceChange, setPriceChange] = useState({ value: 0, pct: 0, positive: true });
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [loading, setLoading] = useState(true);
+const [chartData, setChartData] = useState([]);
 
-  const buildData = useCallback((tf) => {
-    const cfg = TIMEFRAME_CONFIG[tf];
-    const data = generateData(cfg.points, basePrice, cfg.volatility, cfg.trend);
-    const first = data[0]?.price ?? basePrice;
-    const last = data[data.length - 1]?.price ?? basePrice;
-    const change = last - first;
-    const pct = ((change / first) * 100);
-    setPriceChange({ value: change, pct, positive: change >= 0 });
-    return data;
-  }, [basePrice]);
+const [activeTimeframe, setActiveTimeframe] = useState("1D");
+const [animationKey, setAnimationKey] = useState(0);
+const [priceChange, setPriceChange] = useState({
+  value: 0,
+  pct: 0,
+  positive: true,
+});
+const [isTransitioning, setIsTransitioning] = useState(false);
+  // const [activeTimeframe, setActiveTimeframe] = useState("1D");
+  // const [chartData, setChartData] = useState([]);
+  // const [animationKey, setAnimationKey] = useState(0);
+  // const [priceChange, setPriceChange] = useState({ value: 0, pct: 0, positive: true });
+  // const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // const buildData = useCallback((tf) => {
+  //   const cfg = TIMEFRAME_CONFIG[tf];
+  //   const data = generateData(cfg.points, basePrice, cfg.volatility, cfg.trend);
+  //   const first = data[0]?.price ?? basePrice;
+  //   const last = data[data.length - 1]?.price ?? basePrice;
+  //   const change = last - first;
+  //   const pct = ((change / first) * 100);
+  //   setPriceChange({ value: change, pct, positive: change >= 0 });
+  //   return data;
+  // }, [basePrice]);
+
+  // useEffect(() => {
+  //   const data = buildData(activeTimeframe);
+  //   setChartData(data);
+  //   setAnimationKey((k) => k + 1);
+  // }, [activeTimeframe, buildData]);
 
   useEffect(() => {
-    const data = buildData(activeTimeframe);
-    setChartData(data);
-    setAnimationKey((k) => k + 1);
-  }, [activeTimeframe, buildData]);
+  async function loadChart() {
+    try {
+      setLoading(true);
+
+      const PERIOD_MAP = {
+  "1D": "1d",
+  "1W": "5d",
+  "1M": "1mo",
+  "6M": "6mo",
+  "1Y": "1y",
+  "5Y": "5y",
+};
+
+const period = PERIOD_MAP[activeTimeframe];
+
+const res = await fetch(
+  `http://127.0.0.1:8000/api/stocks/${symbol}/history?period=${period}`
+);
+
+      const data = await res.json();
+
+      const formatted = data.map((item) => ({
+        time: item.date,
+        price: item.close,
+        volume: item.volume,
+      }));
+
+      setChartData(formatted);
+
+      const first = formatted[0]?.price;
+      const last = formatted[formatted.length - 1]?.price;
+
+      const change = last - first;
+      const pct = (change / first) * 100;
+
+      setPriceChange({
+        value: change,
+        pct,
+        positive: change >= 0,
+      });
+
+      setAnimationKey((k) => k + 1);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  loadChart();
+}, [symbol, activeTimeframe]);
 
   const handleTimeframeChange = (tf) => {
     if (tf === activeTimeframe || isTransitioning) return;
@@ -163,6 +229,20 @@ export default function StockChart({ symbol = "TSLA", basePrice = 256.4 }) {
   const minPrice = chartData.length ? Math.min(...chartData.map((d) => d.price)) : basePrice * 0.9;
   const maxPrice = chartData.length ? Math.max(...chartData.map((d) => d.price)) : basePrice * 1.1;
   const padding = (maxPrice - minPrice) * 0.12;
+
+  if (loading) {
+  return (
+    <div
+      style={{
+        color: "white",
+        padding: "50px",
+        textAlign: "center",
+      }}
+    >
+      Loading Chart...
+    </div>
+  );
+}
 
   return (
     <>
@@ -382,7 +462,7 @@ export default function StockChart({ symbol = "TSLA", basePrice = 256.4 }) {
 
               <XAxis
                 dataKey="time"
-                tickFormatter={cfg.format}
+                tickFormatter={(date) => date.slice(5)}
                 tickCount={cfg.tickCount}
                 tick={{ fill: "#4b5563", fontSize: 11, fontFamily: "JetBrains Mono, monospace" }}
                 axisLine={{ stroke: "rgba(255,255,255,0.06)" }}

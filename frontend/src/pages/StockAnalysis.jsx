@@ -18,7 +18,8 @@
 //   );
 // }
 
-
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 import Navbar_1 from "../components/stockAnalysis/Navbar_1";
 import StockHeader from "../components/stockAnalysis/StockHeader";
@@ -31,11 +32,43 @@ import FinancialMetrics from "../components/StockAnalysis/MetricsIndicator";
 import News from "../components/StockAnalysis/News";
 
 export default function StockAnalysis() {
+  const { symbol } = useParams();
+  const [stockData, setStockData] = useState(null);
+  useEffect(() => {
+    
+    async function fetchStock() {
+        try {
+            const res = await fetch(
+                `http://127.0.0.1:8000/api/stocks/${symbol}/details`
+            );
+
+            const data = await res.json();
+            console.log(data);
+
+            setStockData(data);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    fetchStock();
+}, [symbol]);
+if (!stockData) {
+  return (
+    <div className="min-h-screen bg-[#050505] flex items-center justify-center text-white">
+      Loading...
+    </div>
+  );
+}
+
   return (
     <div className="min-h-screen bg-[#050505] text-white p-8">
       <Navbar_1 />
-      <StockHeader />
-      <StockChart />
+      <StockHeader stock={stockData} />
+      <StockChart 
+      symbol={symbol} 
+      basePrice={stockData.price ?? 0}
+      />
       <AiAnaysisCard />
       <Technical />
       <FinancialMetrics />

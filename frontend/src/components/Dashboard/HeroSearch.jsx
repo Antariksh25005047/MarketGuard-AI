@@ -41,6 +41,16 @@ function SparkIcon() {
     </svg>
   )
 }
+const stockMap = {
+  RELIANCE: "RELIANCE.NS",
+  TCS: "TCS.NS",
+  HDFCBANK: "HDFCBANK.NS",
+  SUZLON: "SUZLON.NS",
+  IRFC: "IRFC.NS",
+  YESBANK: "YESBANK.NS",
+  ADANIENT: "ADANIENT.NS",
+  ETERNAL: "ETERNAL.NS",
+};
 
 export default function HeroSearch() {
   const [query, setQuery] = useState('')
@@ -48,12 +58,18 @@ export default function HeroSearch() {
   const navigate = useNavigate();
 
   const handleAnalyze = (e) => {
-    e.preventDefault()
-    if(!query.trim())
+  e.preventDefault();
 
-      navigate(`/stock-analysis/${query.toUpperCase()}`);
-    // UI only — wire up real stock analysis here.
-  }
+  if (!query.trim()) return;
+
+  const input = query.toUpperCase();
+  const symbol = stockMap[input] || input;
+  
+  console.log("Input:", input);
+  console.log("Mapped:", symbol);
+
+  navigate(`/stock-analysis/${symbol}`);
+};
 
   return (
     <section className="relative w-full overflow-hidden bg-charcoal px-6 py-20 md:px-10">
@@ -116,15 +132,16 @@ export default function HeroSearch() {
         {/* Trending stock chips */}
         <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
           {TRENDING_STOCKS.map((symbol) => (
-            <button
-              key={symbol}
-              type="button"
-              onClick={() => {
-                setQuery(symbol)
-                navigate(`/stock-analysis/${symbol}`);
-              }}
-              className="rounded-full border border-white/[0.1] bg-white/[0.03] px-4 py-2 font-body text-sm text-white/75 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald/40 hover:bg-emerald/10 hover:text-emerald hover:shadow-[0_0_18px_rgba(34,197,94,0.3)]"
-            >
+        <button
+          key={symbol}
+          type="button"
+          onClick={() => {
+            const mapped = stockMap[symbol] || symbol;
+
+            setQuery(mapped);
+            navigate(`/stock-analysis/${mapped}`);
+          }}
+        >
               {symbol}
             </button>
           ))}

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   BarChart2,
@@ -27,6 +28,13 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [activeLink, setActiveLink] = useState("Analyze");
+
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+  localStorage.removeItem("token");
+  navigate("/login");
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -314,15 +322,25 @@ export default function Navbar() {
 
             {profileOpen && (
               <div className="mg-dropdown">
-                <div className="mg-dropdown-item">
-                  <User size={14} /> Profile
-                </div>
-                <div className="mg-dropdown-item">
+              <Link
+                to="/profile"
+                className="mg-dropdown-item"
+                style={{ textDecoration: "none" }}
+                onClick={() => setProfileOpen(false)}
+              >
+                <User size={14} />
+                Profile
+              </Link>
+                {/* <div className="mg-dropdown-item">
                   <Settings size={14} /> Settings
-                </div>
+                </div> */}
                 <div className="mg-dropdown-divider" />
-                <div className="mg-dropdown-item danger">
-                  <LogOut size={14} /> Logout
+                <div
+                  className="mg-dropdown-item danger"
+                  onClick={handleLogout}
+                >
+                  <LogOut size={14} />
+                  Logout
                 </div>
               </div>
             )}

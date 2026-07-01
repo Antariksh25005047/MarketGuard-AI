@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import Logo from '../Logo'
 
 function BellIcon() {
@@ -35,6 +36,28 @@ function ChevronDownIcon() {
 }
 
 export default function TopBar() {
+
+  const [profileOpen, setProfileOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (!e.target.closest("#profile-menu")) {
+        setProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClick);
+
+    return () =>
+      document.removeEventListener("mousedown", handleClick);
+  }, []);
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/[0.08] bg-charcoal/70 backdrop-blur-xl">
       <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-6 md:px-10">
@@ -73,8 +96,10 @@ export default function TopBar() {
           </button>
 
           {/* Avatar + dropdown */}
+          <div id="profile-menu" className="relative">
           <button
             type="button"
+            onClick={() => setProfileOpen(!profileOpen)}
             aria-label="Open profile menu"
             className="group flex items-center gap-1.5 rounded-full border border-transparent py-1 pl-1 pr-2 transition-all duration-300 hover:border-white/[0.1] hover:bg-white/[0.04]"
           >
@@ -86,6 +111,27 @@ export default function TopBar() {
               <ChevronDownIcon />
             </span>
           </button>
+          {profileOpen && (
+  <div className="absolute right-0 mt-2 w-44 rounded-xl border border-white/10 bg-[#111] shadow-xl z-50">
+
+    <Link
+      to="/profile"
+      className="block px-4 py-3 text-sm text-white hover:bg-white/10"
+      onClick={() => setProfileOpen(false)}
+    >
+      👤 Profile
+    </Link>
+
+    <button
+      onClick={handleLogout}
+      className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/10"
+    >
+      🚪 Logout
+    </button>
+
+  </div>
+)}
+        </div>
         </div>
       </div>
     </header>

@@ -3,25 +3,25 @@ import { Search, ArrowRight, Zap, Trophy, TrendingUp, TrendingDown, X, ChevronRi
  
 // ─── Static Data ───────────────────────────────────────────────────────────────
  
-const BASE_STOCK = {
-  ticker: "TSLA", name: "Tesla", color: "#ef4444",
-  price: "$248.42", rec: "BUY", confidence: 78, risk: "Medium",
-  logo: "T",
-};
+// const BASE_STOCK = {
+//   ticker: "TSLA", name: "Tesla", color: "#ef4444",
+//   price: "$248.42", rec: "BUY", confidence: 78, risk: "Medium",
+//   logo: "T",
+// };
  
-const STOCK_DB = {
-  NVDA: { ticker: "NVDA", name: "NVIDIA",    color: "#22c55e", price: "$875.40", rec: "STRONG BUY", confidence: 94, risk: "Low",    logo: "N" },
-  AAPL: { ticker: "AAPL", name: "Apple",     color: "#60a5fa", price: "$189.30", rec: "BUY",        confidence: 88, risk: "Low",    logo: "A" },
-  MSFT: { ticker: "MSFT", name: "Microsoft", color: "#818cf8", price: "$420.15", rec: "BUY",        confidence: 91, risk: "Low",    logo: "M" },
-  AMZN: { ticker: "AMZN", name: "Amazon",    color: "#fb923c", price: "$182.40", rec: "BUY",        confidence: 85, risk: "Medium", logo: "A" },
-  GOOGL:{ ticker: "GOOGL",name: "Alphabet",  color: "#a78bfa", price: "$165.80", rec: "BUY",        confidence: 87, risk: "Low",    logo: "G" },
-  TSM:  { ticker: "TSM",  name: "TSMC",      color: "#34d399", price: "$148.90", rec: "BUY",        confidence: 83, risk: "Medium", logo: "T" },
-  META: { ticker: "META", name: "Meta",      color: "#38bdf8", price: "$524.70", rec: "STRONG BUY", confidence: 90, risk: "Low",    logo: "M" },
-};
+// const STOCK_DB = {
+//   NVDA: { ticker: "NVDA", name: "NVIDIA",    color: "#22c55e", price: "$875.40", rec: "STRONG BUY", confidence: 94, risk: "Low",    logo: "N" },
+//   AAPL: { ticker: "AAPL", name: "Apple",     color: "#60a5fa", price: "$189.30", rec: "BUY",        confidence: 88, risk: "Low",    logo: "A" },
+//   MSFT: { ticker: "MSFT", name: "Microsoft", color: "#818cf8", price: "$420.15", rec: "BUY",        confidence: 91, risk: "Low",    logo: "M" },
+//   AMZN: { ticker: "AMZN", name: "Amazon",    color: "#fb923c", price: "$182.40", rec: "BUY",        confidence: 85, risk: "Medium", logo: "A" },
+//   GOOGL:{ ticker: "GOOGL",name: "Alphabet",  color: "#a78bfa", price: "$165.80", rec: "BUY",        confidence: 87, risk: "Low",    logo: "G" },
+//   TSM:  { ticker: "TSM",  name: "TSMC",      color: "#34d399", price: "$148.90", rec: "BUY",        confidence: 83, risk: "Medium", logo: "T" },
+//   META: { ticker: "META", name: "Meta",      color: "#38bdf8", price: "$524.70", rec: "STRONG BUY", confidence: 90, risk: "Low",    logo: "M" },
+// };
  
-const SUGGESTIONS = Object.values(STOCK_DB);
+// const SUGGESTIONS = Object.values(STOCK_DB);
  
-const RECENT = ["NVIDIA", "Apple", "Microsoft"];
+// const RECENT = ["NVIDIA", "Apple", "Microsoft"];
  
 const COMPARISON_DATA = {
   NVDA: {
@@ -249,6 +249,7 @@ function StockCard({ stock, align = "left", animate }) {
 // ─── Main Component ────────────────────────────────────────────────────────────
  
 export default function AIStockComparison() {
+  const [baseStock, setBaseStock] = useState(null);
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -268,14 +269,43 @@ export default function AIStockComparison() {
     return () => obs.disconnect();
   }, []);
  
-  const handleQuery = (val) => {
+  // const handleQuery = (val) => {
+  //   setQuery(val);
+  //   if (val.length < 1) { setSuggestions([]); return; }
+    // const q = val.toLowerCase();
+    const handleQuery = async (val) => {
     setQuery(val);
-    if (val.length < 1) { setSuggestions([]); return; }
-    const q = val.toLowerCase();
-    setSuggestions(SUGGESTIONS.filter(s =>
-      s.name.toLowerCase().includes(q) || s.ticker.toLowerCase().includes(q)
-    ).slice(0, 5));
-  };
+
+    if (val.length < 1) {
+        setSuggestions([]);
+        return;
+    }
+
+    try {
+        const res = await fetch(
+            `http://127.0.0.1:8000/api/stocks/${val}/details`
+        );
+
+        if (!res.ok) {
+            setSuggestions([]);
+            return;
+        }
+
+        const data = await res.json();
+
+        setSuggestions([
+            {
+                ticker: data.symbol,
+                name: data.companyName,
+                price: data.price,
+                logo: data.companyName?.charAt(0),
+                color: "#22c55e",
+            },
+        ]);
+    } catch (err) {
+        console.log(err);
+    }
+};
  
   const pick = (stock) => {
     setSelected(stock);
@@ -304,9 +334,9 @@ export default function AIStockComparison() {
     setShowResult(true);
   };
  
-  const winnerStock = compData && compared
-    ? (compData.winner === "TSLA" ? BASE_STOCK : compared)
-    : null;
+  // const winnerStock = compData && compared
+  //   ? (compData.winner === "TSLA" ? BASE_STOCK : compared)
+  //   : null;
  
   return (
     <>
@@ -500,8 +530,8 @@ export default function AIStockComparison() {
               {/* Recent */}
               <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 0 20px", flexWrap: "wrap" }}>
                 <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", fontWeight: 500, flexShrink: 0 }}>Recent:</span>
-                {RECENT.map(name => {
-                  const s = SUGGESTIONS.find(x => x.name === name);
+                {/* {RECENT.map(name => {
+                  // const s = SUGGESTIONS.find(x => x.name === name);
                   return s ? (
                     <button
                       key={name}
@@ -519,7 +549,7 @@ export default function AIStockComparison() {
                       Tesla vs {name}
                     </button>
                   ) : null;
-                })}
+                })} */}
               </div>
             </div>
           )}
@@ -530,7 +560,7 @@ export default function AIStockComparison() {
  
               {/* Stock cards */}
               <div className="ac-cards" style={{ display: "flex", alignItems: "stretch", gap: 0, position: "relative", marginBottom: 18 }}>
-                <StockCard stock={BASE_STOCK} align="left" animate={showResult} />
+                {/* <StockCard stock={BASE_STOCK} align="left" animate={showResult} /> */}
  
                 {/* VS center */}
                 <div style={{
@@ -623,7 +653,7 @@ export default function AIStockComparison() {
  
                 {/* Progress bars */}
                 <div className="ac-bars" style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 20px" }}>
-                  {compData.bars.map((bar, i) => (
+                  {/* {compData.bars.map((bar, i) => (
                     <CompareBarWithTicker
                       key={bar.label}
                       label={bar.label}
@@ -632,7 +662,7 @@ export default function AIStockComparison() {
                       bTicker={compared.ticker}
                       delay={200 + i * 100}
                     />
-                  ))}
+                  ))} */}
                 </div>
               </div>
  

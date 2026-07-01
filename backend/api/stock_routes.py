@@ -1,7 +1,12 @@
 from fastapi import APIRouter, HTTPException
 from datetime import datetime, timedelta
 from backend.core.models import get_session, Stock, StockPrice
-from ml_and_db.scrapers.stock_scraper import fetch_current_price, STOCKS
+from ml_and_db.scrapers.stock_scraper import (
+    fetch_current_price,
+    fetch_stock_details,
+    fetch_stock_history,
+    STOCKS,
+)
 
 router = APIRouter(prefix="/api/stocks", tags=["stocks"])
 
@@ -72,8 +77,26 @@ def get_all_stocks():
             })
 
         return {"stocks": result, "count": len(result)}
+    
     finally:
         session.close()
+@router.get("/{symbol}/details")
+def get_stock_details(symbol: str):
+    data = fetch_stock_details(symbol)
+
+    if not data:
+        raise HTTPException(status_code=404, detail="Stock not found")
+
+    return data
+
+@router.get("/{symbol}/history")
+def get_stock_history(symbol: str, period: str="6mo"):
+    data = fetch_stock_history(symbol, period)
+
+    if not data:
+        raise HTTPException(status_code=404, detail="Stock history not found")
+
+    return data
 
 
 @router.get("/{symbol}")
@@ -91,6 +114,8 @@ def get_stock(symbol: str):
             StockPrice.symbol == symbol,
             StockPrice.timestamp >= cutoff
         ).order_by(StockPrice.timestamp.asc()).all()
+
+        
 
         return {
             "symbol": stock.symbol,
